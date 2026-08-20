@@ -1,115 +1,104 @@
-# OneAPI Gateway
+# OneAPI Gateway (Go Edition)
 
-> **[English](./README.md)** · **[中文](./README.zh-CN.md)**
+> **English** | **[中文](./README.zh-CN.md)**
 
-OneAPI Gateway is a high-performance Python-based LLM API aggregator. It combines multiple upstream providers (OpenAI, Anthropic, Gemini, DeepSeek, Azure, and more) behind one unified OpenAI-compatible endpoint, with a Windows system tray manager and one-click [APIShare](https://apishare.cc) integration.
+High-performance aggregated LLM API gateway, rewritten in Go from the original Python version. Combines multiple upstream providers (OpenAI, Anthropic, Gemini, DeepSeek, Azure, etc.) behind one unified OpenAI-compatible endpoint, with system tray + AiTun + APIShare tunnel integration.
 
-**Version**: 1.0.0  
-**License**: MIT  
-**Status**: Production-ready
+**Version**: 2.0.0
+**Language**: Go 1.23+
+**License**: MIT
 
 ---
+
+## ✨ Why Go?
+
+The original Python version ([backed up at ctz168/oneapi_py](https://github.com/ctz168/oneapi_py)) worked well but had one pain point: **PyInstaller cannot cross-compile**. Producing Windows `.exe`, macOS binary, and Linux binary required either building on each platform manually or maintaining complex GitHub Actions matrix builds.
+
+Go solves this elegantly — a single `go build` command with `GOOS=windows GOARCH=amd64` produces a Windows binary from Linux, with zero CGo dependencies. All three platforms build in seconds on any machine.
 
 ## ✨ Features
 
-- **System Tray Manager** — Start, stop, restart, configure, and one-click "Sell token..." to publish your spare capacity to APIShare, all from the Windows system tray.
-- **Universal Model Alias (`mymodel`)** — Call any model as `mymodel` and OneAPI auto-routes to the cheapest/healthiest active channel — true load-balanced routing.
-- **Multi-Provider Aggregation** — OpenAI, Anthropic, Gemini, DeepSeek, Azure, and more — all behind one unified OpenAI-compatible endpoint.
-- **Daily Auto-Reset & Testing** — Smart quota-exhaustion detection with auto-circuit-break. Daily 12:05 channel health checks. Daily 00:00 quota reset.
-- **Per-Key Rate Limits** — Generate custom API keys with per-minute RPM limits and total quota caps.
-- **Path Compatibility** — Supports both `/v1/chat/completions` and `/chat/completions` — drop-in replacement for the OpenAI SDK.
-- **One-Click APIShare Integration** — Right-click tray → "Sell token..." → paste your APIShare agent token → OneAPI automatically creates a local token, registers `mymodel` as a tunnel-mode provider on APIShare, launches the APIShare tunnel client, and activates it. You earn 90% of every call.
-
----
+- **Single static binary** — no Python install needed, no shared lib dependencies, ~17 MB per platform
+- **True cross-platform build** — `GOOS=windows GOARCH=amd64 go build` works from Linux (and vice versa)
+- **System Tray** — Windows uses `getlantern/systray` (real tray icon). Linux/macOS run headless (HTTP server only).
+- **Universal Model Alias (`mymodel`)** — auto load-balanced routing across all active channels
+- **Multi-Provider Aggregation** — OpenAI, Anthropic, Gemini, DeepSeek, Azure behind one endpoint
+- **Per-Key Rate Limits** — RPM + total token quotas per API key
+- **Daily Auto-Reset** — quota-exhaustion circuit-break + auto recovery at 00:00
+- **Path Compatibility** — both `/v1/chat/completions` and `/chat/completions`
+- **AiTun Integration** — paste your `ait_xxx` secret key, auto-launches tunnel + discovers public domain
+- **APIShare Sell Token** — one-click publish `mymodel` to apishare.cc marketplace
+- **Database Compatible** — reads existing Python-created `oneapi.db` directly (same SQLite schema)
 
 ## 🚀 Quick Start
 
-### Option 1: Download a release package
+### Option 1: Download a release
 
-1. Go to the [latest release page](https://github.com/samaidev/oneapi_r/releases/latest).
-2. Download the package for your platform:
-   - `oneapi-1.0.0-windows.zip` — Windows (with `start.bat`)
-   - `oneapi-1.0.0-linux.tar.gz` — Linux/macOS (with `start.sh`)
-   - `oneapi-1.0.0-source.zip` — Cross-platform source
-3. Unzip and run:
-   - **Windows**: double-click `start.bat`
-   - **Linux/macOS**: `./start.sh`
-4. The tray icon appears. Service starts on `http://localhost:3000`.
+Go to [latest release page](https://github.com/samaidev/oneapi_r/releases/latest) and download the binary for your platform:
+- `oneapi-linux-amd64` — Linux x86_64 (~17 MB)
+- `oneapi-windows-amd64.exe` — Windows x86_64 (~18 MB)
+- `oneapi-darwin-arm64` — macOS Apple Silicon (~16 MB)
 
-### Option 2: From source
+Run:
+```bash
+chmod +x oneapi-linux-amd64
+./oneapi-linux-amd64    # starts on http://localhost:3000
+```
+
+### Option 2: Build from source
 
 ```bash
 git clone https://github.com/samaidev/oneapi.git
 cd oneapi
-pip install -r requirements.txt -r tray-requirements.txt
-python app.py        # headless mode
-# OR
-python tray_manager.py   # with tray (Windows recommended)
+go build -o oneapi-gateway ./cmd/oneapi-gateway
+./oneapi-gateway
 ```
 
----
+### Option 3: Cross-compile for all 3 platforms
+
+```bash
+# From any platform — produces all 3 binaries
+GOOS=linux GOARCH=amd64 go build -o dist/oneapi-linux-amd64 ./cmd/oneapi-gateway
+GOOS=windows GOARCH=amd64 go build -o dist/oneapi-windows-amd64.exe ./cmd/oneapi-gateway
+GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dist/oneapi-darwin-arm64 ./cmd/oneapi-gateway
+```
+
+That's it. No Docker, no PyInstaller spec, no GitHub Actions matrix, no toolchain hassles.
 
 ## 🛠️ Configuration
-
-### Service Port
 
 Edit `.env`:
 
 ```env
 PORT=3000
 DATABASE_URL=sqlite+aiosqlite:///./oneapi.db
-DUCKDNS_DOMAIN=
-DUCKDNS_TOKEN=
+AITUN_SECRET_KEY=    # optional: ait_xxx from https://aitun.cc/ for public domain
 ```
 
-Apply by right-clicking tray → **Restart service**.
+Or use the **Config Panel** at `http://localhost:3000/config` (browser UI).
+
+### AiTun Public Domain
+
+Sign in at [aitun.cc](https://aitun.cc/), register a subdomain, copy your `ait_xxx` secret key, paste into `.env` or the Config Panel. OneAPI auto-launches `aitun -k <key> -p <port>` and discovers the public domain (~5s).
 
 ### Channels (Upstream Providers)
 
-1. Right-click tray → **Open Dashboard** (or visit `http://localhost:3000`).
-2. Default admin password: `admin123` (change it after first login).
-3. Add channels (DeepSeek, Claude, OpenAI, Gemini, etc.).
-4. Configure model mapping:
-   - Format: `alias:real_model` (e.g. `pro-chat:gpt-4o`)
-   - **Universal mode**: requests with `model: "mymodel"` are auto-routed to any active channel and use its first model. This is what APIShare will publish.
+1. Open `http://localhost:3000` (default admin password: `admin123`)
+2. Add channels (DeepSeek, Claude, OpenAI, etc.)
+3. Configure model mapping — `model: "mymodel"` auto-routes to any active channel
 
-### API Tokens
+## 💰 Sell Token to APIShare
 
-In the dashboard → **Tokens** tab:
-- Create per-client tokens with `max_rpm` and `max_tokens` limits.
-- The "Sell token..." feature automatically creates a token named `apishare-cc-public` for APIShare's public traffic.
+1. Get an APIShare agent secret key (`apsagt-...`) from [apishare.cc/dashboard](https://apishare.cc/dashboard)
+2. Open `http://localhost:3000/sell-token` in browser
+3. Paste the key + click "OK & Start Selling"
+4. OneAPI auto-creates local token + registers tunnel provider + launches `apishare-tunnel` + activates
 
----
-
-## 💰 Sell Token to APIShare (One-Click)
-
-The fastest way to monetize your local `mymodel`:
-
-1. **Get an APIShare agent token**: log in to [apishare.cc/dashboard](https://apishare.cc/dashboard) → Agent Tokens card → create a token with `provider:write` permission (or `*` for all). Copy the `apsagt-...` value.
-2. **Open the dialog**: right-click the OneAPI tray icon → **Sell token...**.
-3. **Paste the agent token** in the input box. Adjust the local port (default 3000) and model name (default `mymodel`) if needed.
-4. **Click "OK & Start Selling"**. OneAPI will:
-   - Validate the agent token against `https://apishare.cc/api/user/agent-tokens`.
-   - Locally create a OneAPI token named `apishare-cc-public` (this is what APIShare's public callers will use).
-   - Register a tunnel-mode provider on APIShare with `model_name=mymodel` and `api_key=<local_token>`.
-   - Install `apishare-tunnel` (via pip) if missing, then launch `apishare -k <tunnelToken> -p 3000` as a background subprocess.
-   - Wait for the tunnel to connect, then call `POST /api/provider/activate/{api_id}` to activate.
-5. **Done.** Your `mymodel` is now publicly callable through `https://apishare.cc/v1/chat/completions` (or via the APIShare market page). You earn 90% of every call.
-
-> 💡 **Hyperlink in dialog**: the input area has a clickable "Open apishare.cc/dashboard" link if you need to grab your agent token mid-flow.
-
-### How the auth handshake works
-
-- APIShare consumers send `Authorization: Bearer <apishare_consumer_key>` to apishare.cc.
-- APIShare validates the consumer key, deducts balance, then forwards the request through the standalone tunnel server (port 3397) to your local apishare-tunnel client.
-- The apishare platform injects `Authorization: Bearer <your_local_oneapi_token>` (stored when registering the provider) so your local OneAPI can authenticate the forwarded request.
-- OneAPI then routes the request to `mymodel` — i.e. load-balanced across all your active upstream channels.
-
----
+To stop: click "Stop selling" on the same page.
 
 ## 📖 API Usage
 
-Once OneAPI is running on `http://localhost:3000`, it's a drop-in OpenAI replacement:
+OneAPI is a drop-in OpenAI replacement:
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -121,104 +110,71 @@ curl http://localhost:3000/v1/chat/completions \
   }'
 ```
 
-Both `/v1/chat/completions` and `/chat/completions` work.
-
----
-
 ## 🧱 Architecture
 
 ```
-                          ┌──────────────────────────────┐
-                          │  Your apps / OpenAI SDK       │
-                          └────────────┬─────────────────┘
-                                       │ Bearer sk-oneapi-...
-                                       ▼
-                          ┌──────────────────────────────┐
-                          │  OneAPI Gateway (Python)      │
-                          │  - aiohttp + SQLAlchemy       │
-                          │  - pystray (Windows tray)     │
-                          │  - sell_token_panel.py        │
-                          │    └─ creates local token     │
-                          │    └─ registers on APIShare   │
-                          │    └─ launches apishare-tunnel│
-                          └────────────┬─────────────────┘
-                                       │ model=mymodel (load-balanced)
-                                       ▼
-                  ┌─────────────┬──────┴──────┬─────────────┐
-                  ▼             ▼             ▼             ▼
-            ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐
-            │ OpenAI  │  │Claude   │  │ Gemini  │  │ DeepSeek│
-            └─────────┘  └─────────┘  └─────────┘  └─────────┘
+Your apps / OpenAI SDK
+    │  Bearer sk-oneapi-...
+    ▼
+┌───────────────────────────────────────┐
+│  OneAPI Gateway (Go binary)          │
+│  - chi router + CORS                 │
+│  - balancer (mymodel routing)         │
+│  - proxy (upstream forwarding + SSE)  │
+│  - rate_limiter + adaptive_limiter    │
+│  - reasoning_normalizer              │
+│  - i18n (embed JSON, en + zh)         │
+│  - tray (Windows systray)            │
+│  - aitun (tunnel auto-start)          │
+│  - apishare (sell token flow)         │
+└───────────────────────────────────────┘
+    │  model=mymodel (load-balanced)
+    ▼
+  OpenAI / Claude / Gemini / DeepSeek / Azure
 
-                          ┌──────────────────────────────┐
-                          │  apishare.cc (Go platform)    │
-                          │  - Consumer requests          │
-                          │  - Forwards via tunnel (3397)  │
-                          └────────────┬─────────────────┘
-                                       │ WSS tunnel + Bearer <local_token>
-                                       ▼
-                          ┌──────────────────────────────┐
-                          │  apishare-tunnel client       │
-                          │  (Python, launched by tray)   │
-                          └────────────┬─────────────────┘
-                                       │ HTTP localhost:3000
-                                       ▼
-                          ┌──────────────────────────────┐
-                          │  OneAPI Gateway               │
-                          └──────────────────────────────┘
+Optional public access:
+  ┌───────────────────────────────────────┐
+  │  aitun.cc tunnel (auto-launched)      │
+  │  → myapp.t.aitun.cc                   │
+  └───────────────────────────────────────┘
 ```
-
----
 
 ## 📁 Project Structure
 
 ```
 oneapi/
-├── app.py                  # Main aiohttp server (port 3000)
-├── tray_manager.py         # Windows system tray manager
-├── sell_token_panel.py    # APIShare integration dialog (NEW)
-├── config_panel.py        # .env editor dialog (Tkinter)
-├── i18n.py                # English (default) + 中文 translations
-├── admin.py               # Admin API (login, channels, tokens, logs)
-├── handlers.py            # /v1/chat/completions, /v1/models
-├── core/
-│   ├── load_balancer.py   # mymodel routing logic
-│   ├── proxy.py           # Upstream provider proxying
-│   ├── database.py        # SQLAlchemy models
-│   └── ...
-├── static/                # Dashboard UI
-├── requirements.txt
-├── tray-requirements.txt
-├── start.bat              # Windows launcher
-├── start.sh               # Linux/macOS launcher
-└── launcher-select.bat   # Pick launcher mode
+├── cmd/oneapi-gateway/main.go    # Entry point
+├── internal/
+│   ├── config/                   # .env + env var loading
+│   ├── db/                       # sqlx + SQLite (modernc.org/sqlite, no CGo)
+│   ├── models/                   # Channel, ApiToken, RequestLog, etc.
+│   ├── balancer/                 # mymodel routing + midnight reset
+│   ├── limiter/                  # RateLimiter + AdaptiveLimiter
+│   ├── proxy/                    # Upstream forwarding + reasoning normalizer + utils
+│   ├── handlers/                 # OpenAI + admin API (25+ endpoints)
+│   ├── tray/                     # System tray (Windows only)
+│   ├── aitun/                    # AiTun tunnel auto-launch
+│   ├── apishare/                 # APIShare sell-token flow + web UI
+│   └── i18n/                     # Embed JSON translations (en + zh)
+├── web/
+│   ├── static/                   # Frontend HTML/JS/CSS (reused from Python version)
+│   └── web.go                    # embed.FS for static assets
+├── .env.example
+├── go.mod / go.sum
+└── README.md
 ```
-
----
 
 ## 🔧 Troubleshooting
 
-- **Tray icon missing on Linux**: install `python3-tk` + `libappindicator3-dev` and re-run `pip install pystray`.
-- **"Service started but not detected"**: check `service.log` for upstream errors.
-- **"apishare-tunnel: command not found"**: the Sell token dialog auto-installs it via pip; if it still fails, run `pip install apishare-tunnel` manually.
-- **"Tunnel not connected" warning on activate**: the tunnel may need more than 8 seconds to register. Wait 30s and click **Sell token...** again — OneAPI will detect the existing state and retry activation. You can also activate manually from the apishare.cc dashboard.
-- **Local admin login fails**: if you changed the default password from `admin123`, the Sell token dialog cannot auto-create a local token. Either reset to default, or manually create a token named `apishare-cc-public` in the dashboard and use that.
-
----
-
-## 📜 License
-
-MIT. See [LICENSE](./LICENSE).
-
-## 🙏 Acknowledgements
-
-- [APIShare](https://apishare.cc) — for the tunnel service + marketplace
-- [aiohttp](https://docs.aiohttp.org/) — async HTTP server
-- [pystray](https://github.com/moses-palmer/pystray) — cross-platform tray
-- [Pillow](https://python-pillow.org/) — icon rendering
+- **Linux/macOS: no tray icon** — by design. Linux requires `libayatana-appindicator3-dev` (build with `-tags=appindicator`), macOS requires Cocoa/CGo. Out of the box we run headless on these platforms — open `http://localhost:3000` in browser instead.
+- **Database error "out of memory"** — ensure `.env` has `DATABASE_URL=sqlite+aiosqlite:///./oneapi.db` (or absolute path).
+- **Can't login** — default admin password is `admin123`. Change it after first login.
+- **AiTun not starting** — ensure `aitun-client-*` binary is on PATH or next to OneAPI binary. Download from [aitun.cc/downloads](https://aitun.cc/downloads).
 
 ## 🔗 Links
 
-- **Private source repo**: [samaidev/oneapi](https://github.com/samaidev/oneapi)
-- **Public release repo**: [samaidev/oneapi_r](https://github.com/samaidev/oneapi_r/releases/latest)
-- **APIShare website**: [apishare.cc](https://apishare.cc) · [/oneapi](https://apishare.cc/oneapi) intro page
+- **Source**: [samaidev/oneapi](https://github.com/samaidev/oneapi)
+- **Public releases**: [samaidev/oneapi_r](https://github.com/samaidev/oneapi_r/releases/latest)
+- **Python backup**: [ctz168/oneapi_py](https://github.com/ctz168/oneapi_py)
+- **APIShare**: [apishare.cc](https://apishare.cc)
+- **AiTun**: [aitun.cc](https://aitun.cc)
