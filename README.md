@@ -22,15 +22,15 @@ OneAPI Gateway is a high-performance aggregated LLM API gateway. It combines Ope
 
 ## 📥 Download
 
-Grab the latest release from the **[Releases page](https://github.com/samaidev/oneapi_r/releases/latest)** (current: **v2.0.1**):
+Grab the latest release from the **[Releases page](https://github.com/samaidev/oneapi_r/releases/latest)** (current: **v2.0.0**):
 
 | File | Platform | Size |
 |---|---|---|
-| [`oneapi-windows-amd64.exe`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/oneapi-windows-amd64.exe) | Windows x86_64 | ~18 MB |
-| [`OneAPI-v2.0.1.dmg`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/OneAPI-v2.0.1.dmg) | macOS (OneAPI.app) | ~12 MB |
-| [`OneAPI-v2.0.1-macOS.zip`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/OneAPI-v2.0.1-macOS.zip) | macOS (zipped app) | ~11 MB |
-| [`oneapi-linux-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/oneapi-linux-amd64) | Linux x86_64 | ~18 MB |
-| [`oneapi-darwin-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/oneapi-darwin-amd64) | macOS raw binary | ~19 MB |
+| [`oneapi-windows-amd64.exe`](https://github.com/samaidev/oneapi_r/releases/latest/download/oneapi-windows-amd64.exe) | Windows x86_64 | ~13 MB |
+| [`OneAPI-latest.dmg`](https://github.com/samaidev/oneapi_r/releases/latest/download/OneAPI-latest.dmg) | macOS (OneAPI.app) | ~6.7 MB |
+| [`OneAPI-latest.zip`](https://github.com/samaidev/oneapi_r/releases/latest/download/OneAPI-latest.zip) | macOS (zipped app) | ~6 MB |
+| [`oneapi-linux-amd64`](https://github.com/samaidev/oneapi_r/releases/latest/download/oneapi-linux-amd64) | Linux x86_64 | ~13 MB |
+| [`oneapi-darwin-amd64`](https://github.com/samaidev/oneapi_r/releases/latest/download/oneapi-darwin-amd64) | macOS raw binary | ~13 MB |
 
 ## 🚀 Install & Run
 
