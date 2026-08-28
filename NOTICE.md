@@ -1,24 +1,23 @@
 # OneAPI Gateway — Public Release Repository
 
 This repository hosts **release packages only**. The full source code lives in the
-private repository [samaidev/oneapi](https://github.com/samaidev/oneapi).
+development repository [samaidev/oneapi](https://github.com/samaidev/oneapi).
 
 ## Latest Release
 
-👉 [Download v1.0.0 here](https://github.com/samaidev/oneapi_r/releases/latest)
+👉 [Download the latest release](https://github.com/samaidev/oneapi_r/releases/latest)
 
-## What's inside each release
+## What's inside each release (v2.0.0, Go edition)
 
-| File | Platform | Includes |
-|------|----------|----------|
-| `oneapi-1.0.0-windows.zip` | Windows | `start.bat`, `app.py`, `tray_manager.py`, `sell_token_panel.py`, deps lists |
-| `oneapi-1.0.0-linux.tar.gz` | Linux / macOS | `start.sh`, all Python sources, deps lists |
-| `oneapi-1.0.0-source.zip` | Cross-platform source | Same content as above, for code review / custom builds |
+| File | Platform | Notes |
+|------|----------|-------|
+| `oneapi-windows-amd64.exe` | Windows x86_64 | Single executable with real systray; double-click to run |
+| `OneAPI-v2.0.0.dmg` | macOS | Contains `OneAPI.app` (`OneAPI.app/Contents/MacOS/oneapi-gateway`) |
+| `OneAPI-v2.0.0-macOS.zip` | macOS | Zipped `OneAPI.app`, same content as the DMG |
+| `oneapi-darwin-amd64` | macOS | Raw binary (headless / terminal launch) |
+| `oneapi-linux-amd64` | Linux x86_64 | Single executable (headless, HTTP on :3000) |
 
-## Quick start
+Install guide: https://apishare.cc/oneapi · one-liner (macOS/Linux):
+`curl -fsSL https://apishare.cc/oneapi-install.sh | bash`
 
-Unzip → run `start.bat` (Windows) or `./start.sh` (Linux/macOS). OneAPI Gateway
-starts on `http://localhost:3000`. Right-click the tray icon → **Sell token...**
-to publish your `mymodel` to [apishare.cc](https://apishare.cc).
-
-Full documentation in [README.md](./README.md).
+After launch, open http://localhost:3000 (default password: `admin123`).

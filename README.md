@@ -1,104 +1,90 @@
-# OneAPI Gateway (Go Edition)
+# OneAPI Gateway
 
 > **English** | **[中文](./README.zh-CN.md)**
 
-High-performance aggregated LLM API gateway, rewritten in Go from the original Python version. Combines multiple upstream providers (OpenAI, Anthropic, Gemini, DeepSeek, Azure, etc.) behind one unified OpenAI-compatible endpoint, with system tray + AiTun + APIShare tunnel integration.
-
-**Version**: 2.0.0
-**Language**: Go 1.23+
-**License**: MIT
+OneAPI Gateway is a high-performance aggregated LLM API gateway. It combines OpenAI, Anthropic, Gemini, DeepSeek, Azure and other upstream providers behind one unified OpenAI-compatible endpoint — a single static binary with a system tray manager and built-in admin dashboard. This repository publishes ready-to-run release packages only; the source lives in the development repository [samaidev/oneapi](https://github.com/samaidev/oneapi).
 
 ---
 
-## ✨ Why Go?
-
-The original Python version ([backed up at ctz168/oneapi_py](https://github.com/ctz168/oneapi_py)) worked well but had one pain point: **PyInstaller cannot cross-compile**. Producing Windows `.exe`, macOS binary, and Linux binary required either building on each platform manually or maintaining complex GitHub Actions matrix builds.
-
-Go solves this elegantly — a single `go build` command with `GOOS=windows GOARCH=amd64` produces a Windows binary from Linux, with zero CGo dependencies. All three platforms build in seconds on any machine.
-
 ## ✨ Features
 
-- **Single static binary** — no Python install needed, no shared lib dependencies, ~17 MB per platform
-- **True cross-platform build** — `GOOS=windows GOARCH=amd64 go build` works from Linux (and vice versa)
-- **System Tray** — Windows uses `getlantern/systray` (real tray icon). Linux/macOS run headless (HTTP server only).
-- **Universal Model Alias (`mymodel`)** — auto load-balanced routing across all active channels
-- **Multi-Provider Aggregation** — OpenAI, Anthropic, Gemini, DeepSeek, Azure behind one endpoint
-- **Per-Key Rate Limits** — RPM + total token quotas per API key
-- **Daily Auto-Reset** — quota-exhaustion circuit-break + auto recovery at 00:00
-- **Path Compatibility** — both `/v1/chat/completions` and `/chat/completions`
-- **AiTun Integration** — paste your `ait_xxx` secret key, auto-launches tunnel + discovers public domain
-- **APIShare Sell Token** — one-click publish `mymodel` to apishare.cc marketplace
-- **Database Compatible** — reads existing Python-created `oneapi.db` directly (same SQLite schema)
+- **Single static binary** — no runtime, no dependencies; download, run, done (~17–19 MB per platform)
+- **Multi-Provider Aggregation** — OpenAI, Anthropic, Gemini, DeepSeek, Azure and more behind one unified OpenAI-compatible endpoint
+- **Universal Model Alias (`mymodel`)** — call any model as `mymodel`; requests are load-balanced across all active channels automatically
+- **System Tray Manager** — start, stop, restart, configure, and sell spare capacity from the tray icon (Windows real systray, macOS menu-bar icon; Linux headless)
+- **Built-in Admin Dashboard** — channels, tokens, logs, and configuration at `http://localhost:3000`
+- **Per-Key Rate Limits** — custom API keys with per-minute RPM limits and total token quota caps
+- **Daily Auto-Reset & Health Checks** — quota-exhaustion circuit-break with auto recovery at 00:00, daily channel testing
+- **Free-Model Auto-Load** — on startup the embedded AI agent automatically syncs the latest free models from opencode.ai, so it works out of the box with no API keys
+- **Path Compatibility** — supports both `/v1/chat/completions` and `/chat/completions` (drop-in replacement for the OpenAI SDK)
+- **AiTun Integration** — paste your `ait_xxx` secret key to expose a public domain automatically
+- **APIShare Sell Token** — one-click publish your `mymodel` on apishare.cc and earn from spare capacity
 
-## 🚀 Quick Start
+## 📥 Download
 
-### Option 1: Download a release
+Grab the latest release from the **[Releases page](https://github.com/samaidev/oneapi_r/releases/latest)** (current: **v2.0.0**):
 
-Go to [latest release page](https://github.com/samaidev/oneapi_r/releases/latest) and download the binary for your platform:
-- `oneapi-linux-amd64` — Linux x86_64 (~17 MB)
-- `oneapi-windows-amd64.exe` — Windows x86_64 (~18 MB)
-- `oneapi-darwin-arm64` — macOS Apple Silicon (~16 MB)
+| File | Platform | Size |
+|---|---|---|
+| [`oneapi-windows-amd64.exe`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/oneapi-windows-amd64.exe) | Windows x86_64 | ~18 MB |
+| [`OneAPI-v2.0.0.dmg`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/OneAPI-v2.0.0.dmg) | macOS (OneAPI.app) | ~12 MB |
+| [`OneAPI-v2.0.0-macOS.zip`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/OneAPI-v2.0.0-macOS.zip) | macOS (zipped app) | ~11 MB |
+| [`oneapi-linux-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/oneapi-linux-amd64) | Linux x86_64 | ~18 MB |
+| [`oneapi-darwin-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/oneapi-darwin-amd64) | macOS raw binary | ~19 MB |
 
-Run:
+## 🚀 Install & Run
+
+### Windows
+
+1. Download `oneapi-windows-amd64.exe` (button above or from the [Releases page](https://github.com/samaidev/oneapi_r/releases/latest)).
+2. Double-click to run — no installation needed.
+3. Open http://localhost:3000 in your browser. Default password: `admin123`.
+
+### macOS & Linux (one-line installer — recommended)
+
 ```bash
+curl -fsSL https://apishare.cc/oneapi-install.sh | bash
+```
+
+The installer downloads the right package, installs it, sets up auto-start at login, and launches OneAPI in the background:
+
+- **macOS**: installs to `/Applications/OneAPI.app` + LaunchAgent (menu-bar icon appears)
+- **Linux**: installs to `~/.local/share/oneapi` + systemd user service
+
+Then open http://localhost:3000 in your browser. Default password: `admin123`.
+
+### Manual install (if the one-liner doesn't work)
+
+**Step 1 — install the app / binary**
+
+- **macOS**: download the `.dmg`, mount it, drag `OneAPI.app` to Applications.
+- **Linux**: download `oneapi-linux-amd64`, then:
+
+```bash
+mkdir -p ~/oneapi && cd ~/oneapi
 chmod +x oneapi-linux-amd64
-./oneapi-linux-amd64    # starts on http://localhost:3000
+./oneapi-linux-amd64
 ```
 
-### Option 2: Build from source
+**Step 2 — macOS only, remove quarantine (once)**
 
 ```bash
-git clone https://github.com/samaidev/oneapi.git
-cd oneapi
-go build -o oneapi-gateway ./cmd/oneapi-gateway
-./oneapi-gateway
+xattr -dr com.apple.quarantine /Applications/OneAPI.app
 ```
 
-### Option 3: Cross-compile for all 3 platforms
+**Step 3 — launch (macOS terminal)**
 
 ```bash
-# From any platform — produces all 3 binaries
-GOOS=linux GOARCH=amd64 go build -o dist/oneapi-linux-amd64 ./cmd/oneapi-gateway
-GOOS=windows GOARCH=amd64 go build -o dist/oneapi-windows-amd64.exe ./cmd/oneapi-gateway
-GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dist/oneapi-darwin-arm64 ./cmd/oneapi-gateway
+mkdir -p ~/oneapi && cd ~/oneapi && /Applications/OneAPI.app/Contents/MacOS/oneapi-gateway
 ```
 
-That's it. No Docker, no PyInstaller spec, no GitHub Actions matrix, no toolchain hassles.
+Keep the terminal window open (closing it stops OneAPI). The tray icon shows "OneAPI - Running". For auto-start at login, prefer the one-line installer above.
 
-## 🛠️ Configuration
+## 🖥️ First Run
 
-Edit `.env`:
-
-```env
-PORT=3000
-DATABASE_URL=sqlite+aiosqlite:///./oneapi.db
-AITUN_SECRET_KEY=    # optional: ait_xxx from https://aitun.cc/ for public domain
-```
-
-Or use the **Config Panel** at `http://localhost:3000/config` (browser UI).
-
-### AiTun Public Domain
-
-Sign in at [aitun.cc](https://aitun.cc/), register a subdomain, copy your `ait_xxx` secret key, paste into `.env` or the Config Panel. OneAPI auto-launches `aitun -k <key> -p <port>` and discovers the public domain (~5s).
-
-### Channels (Upstream Providers)
-
-1. Open `http://localhost:3000` (default admin password: `admin123`)
-2. Add channels (DeepSeek, Claude, OpenAI, etc.)
-3. Configure model mapping — `model: "mymodel"` auto-routes to any active channel
-
-## 💰 Sell Token to APIShare
-
-1. Get an APIShare agent secret key (`apsagt-...`) from [apishare.cc/dashboard](https://apishare.cc/dashboard)
-2. Open `http://localhost:3000/sell-token` in browser
-3. Paste the key + click "OK & Start Selling"
-4. OneAPI auto-creates local token + registers tunnel provider + launches `apishare-tunnel` + activates
-
-To stop: click "Stop selling" on the same page.
-
-## 📖 API Usage
-
-OneAPI is a drop-in OpenAI replacement:
+1. Open **http://localhost:3000** and sign in (default password `admin123` — change it after first login).
+2. Add **channels** (DeepSeek, Claude, OpenAI, etc.) in the dashboard.
+3. Call any model through the unified endpoint with `model: "mymodel"` — requests are routed to the healthiest active channel:
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -110,71 +96,24 @@ curl http://localhost:3000/v1/chat/completions \
   }'
 ```
 
-## 🧱 Architecture
+The embedded sidebar AI agent is ready immediately — on every startup it auto-syncs the latest free models from opencode.ai (no API key required).
 
-```
-Your apps / OpenAI SDK
-    │  Bearer sk-oneapi-...
-    ▼
-┌───────────────────────────────────────┐
-│  OneAPI Gateway (Go binary)          │
-│  - chi router + CORS                 │
-│  - balancer (mymodel routing)         │
-│  - proxy (upstream forwarding + SSE)  │
-│  - rate_limiter + adaptive_limiter    │
-│  - reasoning_normalizer              │
-│  - i18n (embed JSON, en + zh)         │
-│  - tray (Windows systray)            │
-│  - aitun (tunnel auto-start)          │
-│  - apishare (sell token flow)         │
-└───────────────────────────────────────┘
-    │  model=mymodel (load-balanced)
-    ▼
-  OpenAI / Claude / Gemini / DeepSeek / Azure
+## 💰 Sell Your Spare Capacity on APIShare
 
-Optional public access:
-  ┌───────────────────────────────────────┐
-  │  aitun.cc tunnel (auto-launched)      │
-  │  → myapp.t.aitun.cc                   │
-  └───────────────────────────────────────┘
-```
+1. Get an APIShare agent secret key (`apsagt-...`) from [apishare.cc/dashboard](https://apishare.cc/dashboard).
+2. Right-click the OneAPI tray icon → **Sell token...** (or open `http://localhost:3000/sell-token`).
+3. Paste the agent secret key and click **OK & Start Selling** — OneAPI launches the tunnel, publishes your `mymodel` on apishare.cc, and starts routing paid traffic. You earn 90% of every call. To stop, click **Stop selling** on the same page.
 
-## 📁 Project Structure
+## ❓ Troubleshooting
 
-```
-oneapi/
-├── cmd/oneapi-gateway/main.go    # Entry point
-├── internal/
-│   ├── config/                   # .env + env var loading
-│   ├── db/                       # sqlx + SQLite (modernc.org/sqlite, no CGo)
-│   ├── models/                   # Channel, ApiToken, RequestLog, etc.
-│   ├── balancer/                 # mymodel routing + midnight reset
-│   ├── limiter/                  # RateLimiter + AdaptiveLimiter
-│   ├── proxy/                    # Upstream forwarding + reasoning normalizer + utils
-│   ├── handlers/                 # OpenAI + admin API (25+ endpoints)
-│   ├── tray/                     # System tray (Windows only)
-│   ├── aitun/                    # AiTun tunnel auto-launch
-│   ├── apishare/                 # APIShare sell-token flow + web UI
-│   └── i18n/                     # Embed JSON translations (en + zh)
-├── web/
-│   ├── static/                   # Frontend HTML/JS/CSS (reused from Python version)
-│   └── web.go                    # embed.FS for static assets
-├── .env.example
-├── go.mod / go.sum
-└── README.md
-```
-
-## 🔧 Troubleshooting
-
-- **Linux/macOS: no tray icon** — by design. Linux requires `libayatana-appindicator3-dev` (build with `-tags=appindicator`), macOS requires Cocoa/CGo. Out of the box we run headless on these platforms — open `http://localhost:3000` in browser instead.
-- **Database error "out of memory"** — ensure `.env` has `DATABASE_URL=sqlite+aiosqlite:///./oneapi.db` (or absolute path).
-- **Can't login** — default admin password is `admin123`. Change it after first login.
-- **AiTun not starting** — ensure `aitun-client-*` binary is on PATH or next to OneAPI binary. Download from [aitun.cc/downloads](https://aitun.cc/downloads).
+- **Can't log in** — default admin password is `admin123`; change it after first login.
+- **No tray icon on Linux/macOS** — Linux runs headless by design (open the dashboard in a browser); on macOS the menu-bar icon needs the app installed under `/Applications`.
+- **macOS blocks the app ("unidentified developer")** — run `xattr -dr com.apple.quarantine /Applications/OneAPI.app` once.
+- **Port 3000 already in use** — set `PORT=<other>` in the `.env` file next to the binary (or the Config Panel at `http://localhost:3000/config`) and restart.
 
 ## 🔗 Links
 
-- **Source**: [samaidev/oneapi](https://github.com/samaidev/oneapi)
-- **Public releases**: [samaidev/oneapi_r](https://github.com/samaidev/oneapi_r/releases/latest)
-- **Python backup**: [ctz168/oneapi_py](https://github.com/ctz168/oneapi_py)
-- **APIShare**: [apishare.cc](https://apishare.cc)
-- **AiTun**: [aitun.cc](https://aitun.cc)
+- **Install guide & docs**: https://apishare.cc/oneapi
+- **Source (development repo)**: [samaidev/oneapi](https://github.com/samaidev/oneapi)
+- **Releases**: [samaidev/oneapi_r/releases/latest](https://github.com/samaidev/oneapi_r/releases/latest)
+- **APIShare**: [apishare.cc](https://apishare.cc) · **AiTun**: [aitun.cc](https://aitun.cc)
