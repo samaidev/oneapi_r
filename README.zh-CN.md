@@ -22,15 +22,15 @@ OneAPI Gateway 是高性能聚合 LLM API 网关，将 OpenAI、Anthropic、Gemi
 
 ## 📥 下载
 
-前往 **[Releases 发布页](https://github.com/samaidev/oneapi_r/releases/latest)** 下载最新版本（当前：**v2.0.0**）：
+前往 **[Releases 发布页](https://github.com/samaidev/oneapi_r/releases/latest)** 下载最新版本（当前：**v2.0.1**）：
 
 | 文件 | 平台 | 大小 |
 |---|---|---|
-| [`oneapi-windows-amd64.exe`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/oneapi-windows-amd64.exe) | Windows x86_64 | ~18 MB |
-| [`OneAPI-v2.0.0.dmg`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/OneAPI-v2.0.0.dmg) | macOS（OneAPI.app） | ~12 MB |
-| [`OneAPI-v2.0.0-macOS.zip`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/OneAPI-v2.0.0-macOS.zip) | macOS（压缩包） | ~11 MB |
-| [`oneapi-linux-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/oneapi-linux-amd64) | Linux x86_64 | ~18 MB |
-| [`oneapi-darwin-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.0/oneapi-darwin-amd64) | macOS 裸二进制 | ~19 MB |
+| [`oneapi-windows-amd64.exe`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/oneapi-windows-amd64.exe) | Windows x86_64 | ~18 MB |
+| [`OneAPI-v2.0.1.dmg`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/OneAPI-v2.0.1.dmg) | macOS（OneAPI.app） | ~12 MB |
+| [`OneAPI-v2.0.1-macOS.zip`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/OneAPI-v2.0.1-macOS.zip) | macOS（压缩包） | ~11 MB |
+| [`oneapi-linux-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/oneapi-linux-amd64) | Linux x86_64 | ~18 MB |
+| [`oneapi-darwin-amd64`](https://github.com/samaidev/oneapi_r/releases/download/v2.0.1/oneapi-darwin-amd64) | macOS 裸二进制 | ~19 MB |
 
 ## 🚀 安装与运行
 
