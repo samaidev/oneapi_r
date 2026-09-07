@@ -15,7 +15,7 @@ OneAPI Gateway is a high-performance aggregated LLM API gateway. It combines Ope
 - **Built-in Admin Dashboard** — channels, tokens, logs, and configuration at `http://localhost:3000`
 - **Per-Key Rate Limits** — custom API keys with per-minute RPM limits and total token quota caps
 - **Daily Auto-Reset & Health Checks** — quota-exhaustion circuit-break with auto recovery at 00:00, daily channel testing
-- **Free-Model Auto-Load** — on startup the embedded AI agent automatically syncs the latest free models from opencode.ai, so it works out of the box with no API keys
+- **Built-in AI Agent** — sidebar assistant with web search, file tools and full admin-API access, driven by any model configured on your channels
 - **Path Compatibility** — supports both `/v1/chat/completions` and `/chat/completions` (drop-in replacement for the OpenAI SDK)
 - **AiTun Integration** — paste your `ait_xxx` secret key to expose a public domain automatically
 - **APIShare Sell Token** — one-click publish your `mymodel` on apishare.cc and earn from spare capacity
@@ -96,7 +96,7 @@ curl http://localhost:3000/v1/chat/completions \
   }'
 ```
 
-The embedded sidebar AI agent is ready immediately — on every startup it auto-syncs the latest free models from opencode.ai (no API key required).
+The embedded sidebar AI agent is ready immediately — pick any model configured on your channels from the drawer's dropdown and start working with it.
 
 ## 💰 Sell Your Spare Capacity on APIShare
 

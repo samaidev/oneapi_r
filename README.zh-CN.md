@@ -15,7 +15,7 @@ OneAPI Gateway 是高性能聚合 LLM API 网关，将 OpenAI、Anthropic、Gemi
 - **内置管理后台** — 通道、令牌、日志、配置一页搞定（`http://localhost:3000`）
 - **每 Key 限速** — 自定义 API Key 支持 RPM 限速与总 token 配额上限
 - **每日自动重置与健康检查** — 额度耗尽自动熔断，每日 00:00 自动恢复，每日定时通道测试
-- **免费模型自动加载** — 内置 AI 智能体启动时自动同步 opencode.ai 最新免费模型，无需任何 API Key 开箱即用
+- **内置 AI 智能体** — 侧边栏助手支持联网搜索、文件工具和完整管理 API，可使用你渠道上配置的任意模型
 - **路径兼容** — `/v1/chat/completions` 与 `/chat/completions` 均支持（OpenAI SDK 无缝替换）
 - **AiTun 集成** — 粘贴 `ait_xxx` 密钥自动开通公网域名
 - **APIShare 一键出售** — 一键把 `mymodel` 发布到 apishare.cc，闲置额度变现
@@ -98,7 +98,7 @@ curl http://localhost:3000/v1/chat/completions \
   }'
 ```
 
-内置侧边栏 AI 智能体开箱即用——每次启动自动同步 opencode.ai 最新免费模型（无需 API Key）。
+内置侧边栏 AI 智能体开箱即用——在抽屉下拉中选择渠道上已配置的任意模型即可开始。
 
 ## 💰 在 APIShare 出售闲置额度
 
